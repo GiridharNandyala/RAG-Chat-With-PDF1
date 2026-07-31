@@ -81,12 +81,18 @@ if uploaded_file is not None:
             --- ANSWER ---
             """
 
-            # Generate Content using Stable Model
-            model = genai.GenerativeModel("gemini-2.0-flash")
-            response = model.generate_content(prompt)
+            try:
+                model = genai.GenerativeModel("gemini-1.5-flash")
+                response = model.generate_content(prompt)
 
-            st.markdown("### 🤖 Answer:")
-            st.write(response.text)
+                st.markdown("### 🤖 Answer:")
+                st.write(response.text)
 
-            with st.expander("Show Retrieved Context (RAG Inspection)"):
-                st.write(retrieved_context)
+                with st.expander("Show Retrieved Context (RAG Inspection)"):
+                    st.write(retrieved_context)
+
+            except Exception as e:
+                if "429" in str(e) or "ResourceExhausted" in str(e):
+                    st.error("⚠️ API Quota Limit Reached! 1 నిమిషం తర్వాత మళ్ళీ ప్రయత్నించండి లేదా Google AI Studio లో కొత్త API Key క్రియేట్ చేయండి.")
+                else:
+                    st.error(f"Error generating response: {e}")
