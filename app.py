@@ -43,18 +43,17 @@ if uploaded_file is not None:
         chunks = text_splitter.split_documents(pages)
 
         # ChromaDB setup
-        chroma_client = chromadb.PersistentClient(path="./chroma_db_ui")
-        default_ef = embedding_functions.DefaultEmbeddingFunction()
+    client = chromadb.Client()
+    default_ef = embedding_functions.DefaultEmbeddingFunction()
 
-        collection = chroma_client.get_or_create_collection(
-            name="ui_pdf_knowledge_base",
-            embedding_function=default_ef
-        )
+    collection = client.get_or_create_collection(
+        name="ui_pdf_knowledge_base",
+        embedding_function=default_ef
+    )
+    documents_list = [chunk.page_content for chunk in chunks]
+    ids_list = [f"ui_id_{i}" for i in range(len(chunks))]
 
-        documents_list = [chunk.page_content for chunk in chunks]
-        ids_list = [f"ui_id_{i}" for i in range(len(chunks))]
-
-        collection.add(documents=documents_list, ids=ids_list)
+    collection.add(documents=documents_list, ids=ids_list)
 
     st.success("PDF processed and ready for questions!")
 
