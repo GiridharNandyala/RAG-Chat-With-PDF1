@@ -80,11 +80,10 @@ if uploaded_file is not None:
             --- ANSWER ---
             """
 
-            # Generation
             response = genai_client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
-           )
+                model="gemini-1.5-flash",
+                contents=prompt
+            )
 
             st.markdown("### 🤖 Answer:")
             st.write(response.text)
