@@ -82,7 +82,7 @@ if uploaded_file is not None:
             """
 
             # Generate Content using Stable Model
-            model = genai.GenerativeModel("gemini-1.5-flash")
+            model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content(prompt)
 
             st.markdown("### 🤖 Answer:")
