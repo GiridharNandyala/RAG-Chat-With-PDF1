@@ -20,7 +20,7 @@ if not api_key:
     st.stop()
 
 # Initialize Gemini Client
-client = genai.Client(api_key=api_key)
+genai_client = genai.Client(api_key=api_key)
 
 # Sidebar for PDF Upload
 st.sidebar.header("Upload Document")
@@ -81,10 +81,10 @@ if uploaded_file is not None:
             """
 
             # Generation
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt
-            )
+            response = genai_client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+           )
 
             st.markdown("### 🤖 Answer:")
             st.write(response.text)
