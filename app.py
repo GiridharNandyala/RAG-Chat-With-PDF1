@@ -5,22 +5,22 @@ import chromadb
 from chromadb.utils import embedding_functions
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from google import genai
+import google.generativeai as genai
 
 # Page Config
 st.set_page_config(page_title="AI Chat with PDF", page_icon="📄")
 st.title("📄 Chat with your PDF (RAG Application)")
 
-# Load environment variables
+# Load environment variables (Local) & Streamlit Secrets (Cloud)
 load_dotenv()
-api_key = os.getenv("GEMINI_API_KEY")
+api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
 
 if not api_key:
-    st.error("Please set your GEMINI_API_KEY in the .env file.")
+    st.error("Please set your GEMINI_API_KEY in Streamlit Secrets or .env file.")
     st.stop()
 
-# Initialize Gemini Client
-genai_client = genai.Client(api_key=api_key)
+# Configure Gemini
+genai.configure(api_key=api_key)
 
 # Sidebar for PDF Upload
 st.sidebar.header("Upload Document")
@@ -42,18 +42,19 @@ if uploaded_file is not None:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
         chunks = text_splitter.split_documents(pages)
 
-        # ChromaDB setup
-    client = chromadb.Client()
-    default_ef = embedding_functions.DefaultEmbeddingFunction()
+        # ChromaDB setup (In-Memory for Streamlit Cloud)
+        client = chromadb.Client()
+        default_ef = embedding_functions.DefaultEmbeddingFunction()
 
-    collection = client.get_or_create_collection(
-        name="ui_pdf_knowledge_base",
-        embedding_function=default_ef
-    )
-    documents_list = [chunk.page_content for chunk in chunks]
-    ids_list = [f"ui_id_{i}" for i in range(len(chunks))]
+        collection = client.get_or_create_collection(
+            name="ui_pdf_knowledge_base",
+            embedding_function=default_ef
+        )
+        
+        documents_list = [chunk.page_content for chunk in chunks]
+        ids_list = [f"ui_id_{i}" for i in range(len(chunks))]
 
-    collection.add(documents=documents_list, ids=ids_list)
+        collection.add(documents=documents_list, ids=ids_list)
 
     st.success("PDF processed and ready for questions!")
 
@@ -80,10 +81,9 @@ if uploaded_file is not None:
             --- ANSWER ---
             """
 
-            response = genai_client.models.generate_content(
-                model="gemini-1.5-flash",
-                contents=prompt
-            )
+            # Generate Content using Stable Model
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt)
 
             st.markdown("### 🤖 Answer:")
             st.write(response.text)
